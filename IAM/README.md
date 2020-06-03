@@ -1,55 +1,132 @@
-# Related knowledges
+# IAM
 
-## VPC
+## 概述
 
-### 概述
+AWS Identity and Access Management(IAM)是一种Web服务，可以帮助您安全地控制对AWS资源的访问。您可以使用IAM控制对哪个用户进行身份验证(登录)和授权 (具有权限)以使用资源。[官方文档传送门](https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/introduction.html)。
 
-1. [官方文档](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/what-is-amazon-vpc.html)
+## 模拟题
 
-### CIDR
+1. 关于以下IAM策略：
 
-[CIDR计算器](http://www.subnet-calculator.com/cidr.php)
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Deny",
+         "Action": "*",
+         "Resource": "*",
+         "Condition": {
+           "NotIpAddress": {
+             "aws:SourceIp": [
+               "172.101.1.36/32"
+             ]
+           }
+         }
+       }
+     ]
+   }
+   ```
 
-### VPC中的数据保护
+   下列描述正确的是：(#2-8-C02)
 
-1. AWS建议：
-   - 对每个账户使用 Multi-Factor Authentication (MFA)。
-   - 使用 SSL/TLS 与 AWS 资源进行通信。
-   - 使用 AWS CloudTrail 设置 API 和用户活动日志记录。
-   - 使用高级托管安全服务（例如 Amazon Macie），它有助于发现和保护存储在 Amazon S3 中的个人数据。
- 
- 2. 提高和监控VPC的安全性的四种服务：
-    - 安全组：安全组用作相关 Amazon EC2 实例的防火墙，可在实例级别控制入站和出站的数据流。
-    - 网络访问控制列表 (ACL)：用作关联的子网的防火墙，在子网级别同时控制入站和出站流量。
-    - 流日志：流日志捕获有关在您的 VPC 中传入和传出网络接口的 IP 流量的信息。您可以为 VPC、子网或各个网络接口创建流日志。流日志数据将发布到 CloudWatch Logs 或 Amazon S3，这可帮助您诊断过于严格或过于宽松的安全组和网络 ACL 规则。
-    - 流量镜像：您可以从 Amazon EC2 实例的弹性网络接口复制网络流量。然后将流量发送到带外安全和监控设备。
+   - [ ] A. 除IP地址`172.101.1.36`以外的所有资源的访问都会被拒绝。
+   - [ ] B. IP地址`172.101.1.36`可以访问一切资源。
+   - [ ] C. 除IP地址`172.101.1.36`以外的所有资源的访问都会被允许。
+   - [ ] D. 以上说法都不对。
 
-### 相关习题
+2. 以下SCP用于为特定的OU中的AWS资源设置权限：
 
-1. 一家公司需要记录私有子网中所有IP包（源，目标，协议），最佳解决方案是什么？（#1-8）
-   - [ ] A. 使用[VPC flow logs](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/flow-logs.html)。
-   - [ ] B. 使用EC2上的`source destination checkout`。
-   - [ ] C. 使用[AWS CloudTrail](https://docs.aws.amazon.com/zh_cn/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)并且使用S3存储日志文件。
-   - [ ] D. 使用[Amazon CloudWatch](https://docs.aws.amazon.com/zh_cn/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)进行监控
-   
-2. 一个应用运行在私有子网的EC2实例上，这个应用需要读写`Amazon Kinesis Data Streams`上的数据。但是该公司要求读取数据的流不能流向万维网（Internet），最佳解决方案是什么？（#1-39）
-   - [ ] A. 在一个共有子网中配置一个[NAT网关（NAT Gateway）](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/vpc-nat-gateway.html)并且将读写流路由到`Kinesis`服务上。
-   - [ ] B. 为`Kinesis`配置一个[网关 VPC 终端节点（Gateway VPC Endpoint）](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/vpce-gateway.html)并且通过其将读写流路由到`Kinesis`服务上。
-   - [ ] C. 为`Kinesis`配置一个[接口 VPC 终端节点（Interface VPC Endpoint）](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/vpce-interface.html)并且通过其将读写流路由到`Kinesis`服务上。
-   - [ ] D. 为`Kinesis`配置一个[AWS Direct Connect 虚拟接口](https://docs.aws.amazon.com/zh_cn/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html)并且通过其将读写流路由到`Kinesis`服务上。
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ec2:*",
+           "cloudwatch:*"
+         ],
+         "Resource": "*",
+       }
+     ]
+   }
+   ```
 
-3. 你启动了一个实例并且将它用作在公共子网中NAT设备。接着你修改路由表，在私有子网中将此NAT设备变更成互联网流的目标，当你试图使用此私有子网中的实例去连接外网（outbount connection）,你发现这并不成功，什么操作能解决这个问题？（#1-47）
-   - [ ] A. 为这个NAT实例添加[弹性网络接口（Elasitc Network Interface）](https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/UserGuide/using-eni.html)，并把它加入到私有子网中。
-   - [ ] B. 为这个NAT实例添加[弹性IP地址（Elasitc IP Address）](hhttps://docs.aws.amazon.com/zh_cn/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html)。
-   - [ ] C. 为这个NAT实例添加另外一个弹性网络接口（Elasitc Network Interface）并把它加入到公有子网中。
-   - [ ] D. 停止这个NAT实例上的[Source/Destination Check](https://docs.aws.amazon.com/zh_cn/vpc/latest/userguide/VPC_NAT_Instance.html)功能。
+   以下描述正确的是：（#2-31-C02）
+   - [ ] A. 成员账户中设置此SCP的所有OU用户都拥有完整的EC2特权。
+   - [ ] B. 成员账户中设置此SCP的所有OU用户都可以设置EC2和CloudWatch的完全访问权。
+   - [ ] C. 成员账户中设置此SCP的所有OU用户所有的的EC2特权都不拥有。
+   - [ ] D. 成员账户中设置此SCP的所有OU用户都无法设置EC2和CloudWatch的完全访问权。
 
-## AWS Outposts
+3. 一家公司正在构建语音响应系统，该系统可在接到查询电话时将电话路由到适当的人。该系统在多可用区部署了EC2实例，并配置了Auto Scaling组，ALB和RDS实例的组合。您需要利用身份验证令牌来保护您的客户数据，以便您只能通过存储于EC2实例的配置文件中的认证信息访问RDS数据库。怎样实现这一需求？（#2-38-C02）
+   - [ ] A. 使用IAM认证数据库来授予RDS的访问权。
+   - [ ] B. 利用SSL对RDS的访问进行加密。
+   - [ ] C. 通过对EC2实例上设置IAM角色来授予对RDS的访问权。
+   - [ ] D. 通过STS临时授予RDS的访问权，
 
-### 概述
+4. 一家公司在本地和AWS云中都托管系统。该公司需要使用存储在Active Directory中的内部凭据来确保所有用户都可以在两种环境中访问资源。能实现这一需求的方法是什么？（#2-42-C02）
+   - [ ] A. IAM组。
+   - [ ] B. AWS Cognito。
+   - [ ] C. AWS Organization中的Active Directory服务。
+   - [ ] D. AWS SAML。
 
-AWS Outposts 是一项完全托管的服务，可将 AWS 基础设施、AWS 服务、API 和工具扩展到几乎任何数据中心、共处空间或本地设施，以实现真正一致的混合体验。AWS Outposts 非常适合**需要低延迟访问本地系统、本地数据处理或本地数据存储的工作负载**。
+5. 您的公司正在经营一套托管在AWS上的系统。您决定引入新的API网关来实现应用间的协作。因此，作为API网关的权限管理，有必要将适当级别的权限授予开发人员，IT管理员和用户以进行管理。请选择最合适的设置方法来实实现上述权限管理？（#1-25-C02）
+   - [ ] A. 利用STS对不同的用户授予访问权。
+   - [ ] B. 利用IAM策略对不同的用户授予访问权。
+   - [ ] C. 利用AWS Config对不同的用户授予访问权。
+   - [ ] D. 利用AWS用户访问密匙对不同的用户授予访问权。
 
-### 应用
+6. 以下IAM策略用于设置EC2实例的权限：
 
-AWS Outposts 解决了多种行业中的低延迟应用程序需求和本地数据处理需求。
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Action": "ec2:*",
+         "Effect": "Allow",
+         "Resource": "*"
+       },
+       {
+         "Effect": "Deny",
+         "Action": [
+           "ec2:*ReservedInstances*",
+           "ec2:TerminateInstances"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+
+   下列描述正确的是：（#1-32-C02）
+
+   - [ ] A. 允许对预留实例（EC2 RI）的操作。
+   - [ ] B. 关于EC2实例的所有操作都是被允许的。
+   - [ ] C. 对于所有的EC2，终止操作是被拒绝的。
+   - [ ] D. 对于所有的预留实例（EC2 RI），终止操作是被拒绝的。
+
+7. 您是构建某移动应用程序的解决方案架构师。此移动应用程序允许您将照片存储在S3上，并使用与OpenID Connect兼容的身份提供程序登录到您的应用程序。AWS STS通过授予权限的机制用于用户的临时访问。选择如何为此应用程序配置AWS STS。（#3-38-C02）
+   - [ ] A. 授予跨账户访问权限。
+   - [ ] B. SAML ID联合验证。
+   - [ ] C. Web ID联合验证。
+   - [ ] D. IAM角色设定。
+
+8. 您的公司使用AWS Organizations在OU的基础上实施访问控制。您在OU1中添加了一个设置，允许对EC2和S3拥有所有权。接下来，对于OU1中的IAM用户，您设置了以下策略：仅EC2的删除权限为Deny，其他EC2操作为允许。除此之外再没有其他策略。请选择该IAM用户的权限状态。（#3-41-C02）
+   - [ ] A. EC2的操作中，仅删除是被禁止的。
+   - [ ] B. EC2和S3的所有操作都被允许。
+   - [ ] C. EC2的操作中，仅删除是被禁止的，S3的所有操作都是被允许的。
+   - [ ] D. 只有EC2的所有操作是被允许的。
+
+9. 公司A使用一个AWS账户（ID890209911），并通过划分IAM组在多个部门中使用AWS资源。我们为开发组分配一个描述性标识符，并发布在AWS管理页面的登录页面的URL上。使用AWS CLI命令`iam create-account-alias --account-alias development-group`选择创建的AWS账户的登录页面URL是？（#3-55-C02）
+   - [ ] A. `https://development-group.signin.aws.amazon.com/console/`
+   - [ ] B. `https://development-group.aws.amazon.com/console/`
+   - [ ] C. `https://development-group.aws.signin.amazon.com/console/`
+   - [ ] D. `https://890209911.signin.aws.amazon.com/console/`
+
+10. 您的客户刚刚选用AWS进行服务托管。该公司通过Active Directory实现权限管理，但是有必要通过AWS IAM有效地将其与权限管理一起使用，怎样实现这一需求？（#3-61-C02）
+    - [ ] A. Simple AD
+    - [ ] B. AWS Cognito
+    - [ ] C. AWS Inspector
+    - [ ] D. AWS Connector
